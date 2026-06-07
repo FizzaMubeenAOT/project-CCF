@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %> — EduTrack</title>
+  <%- include('../partials/head-meta') %>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <%- include('../partials/sidebar') %>
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title"><%= title %></span>
+    </div>
+
+    <div class="page-body">
+      <%- include('../partials/flash') %>
+
+      <div class="page-header">
+        <h1>Team & Roles</h1>
+        <p>Manage access levels for EduTrack users</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title"><%= users.length %> team member<%= users.length !== 1 ? 's' : '' %></span>
+        </div>
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last login</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% users.forEach(u => { %>
+              <tr>
+                <td>
+                  <div style="font-weight:600"><%= u.username %></div>
+                  <div class="text-dim" style="font-size:12px"><%= u.loginCount || 0 %> logins</div>
+                </td>
+                <td class="text-muted" style="font-size:13px"><%= u.email %></td>
+                <td>
+                  <form method="POST" action="/users/<%= u._id %>/role" class="inline-form">
+                    <select name="role" class="form-control form-control-sm" onchange="this.form.submit()">
+                      <% ['admin','staff','viewer'].forEach(r => { %>
+                        <option value="<%= r %>" <%= u.role===r?'selected':'' %>><%= r %></option>
+                      <% }) %>
+                    </select>
+                  </form>
+                </td>
+                <td>
+                  <span class="badge <%= u.isActive ? 'badge-active' : 'badge-inactive' %>">
+                    <%= u.isActive ? 'active' : 'disabled' %>
+                  </span>
+                </td>
+                <td class="text-dim mono" style="font-size:12px">
+                  <%= u.lastLoginAt
+                    ? new Date(u.lastLoginAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+                    : '—' %>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <form method="POST" action="/users/<%= u._id %>/toggle">
+                      <button type="submit" class="btn btn-outline btn-xs"<%= u.username === currentUser ? ' disabled' : '' %>>
+                        <%= u.isActive ? 'Deactivate' : 'Activate' %>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-head"><span class="card-title">Role permissions</span></div>
+        <div class="card-body">
+          <div class="perm-grid">
+            <div class="perm-item"><span class="badge badge-graduated">admin</span> Full access — create, edit, delete, manage users</div>
+            <div class="perm-item"><span class="badge badge-active">staff</span> Create and edit students — no delete</div>
+            <div class="perm-item"><span class="badge badge-inactive">viewer</span> Read-only — browse dashboard and records</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>

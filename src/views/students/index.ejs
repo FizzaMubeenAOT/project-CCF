@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><%= title %> — EduTrack</title>
+  <%- include('../partials/head-meta') %>
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
@@ -13,7 +14,10 @@
     <div class="topbar">
       <span class="topbar-title">Students</span>
       <div class="topbar-actions">
+        <a href="<%= (() => { const q = Object.assign({}, query); delete q.page; const qs = Object.entries(q).filter(([,v])=>v).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&'); return '/students/export' + (qs ? '?' + qs : ''); })() %>" class="btn btn-outline btn-sm">↓ Export CSV</a>
+        <% if (canEdit) { %>
         <a href="/students/new" class="btn btn-primary btn-sm">＋ Add Student</a>
+        <% } %>
       </div>
     </div>
 
@@ -96,11 +100,15 @@
                 </td>
                 <td>
                   <div class="actions-cell">
+                    <% if (canEdit) { %>
                     <a href="/students/<%= s._id %>/edit" class="btn btn-outline btn-xs">Edit</a>
+                    <% } %>
+                    <% if (canDelete) { %>
                     <form method="POST" action="/students/<%= s._id %>?_method=DELETE"
                           data-confirm="Delete <%= s.firstName %> <%= s.lastName %>? This cannot be undone.">
                       <button class="btn btn-danger btn-xs">Delete</button>
                     </form>
+                    <% } %>
                   </div>
                 </td>
               </tr>

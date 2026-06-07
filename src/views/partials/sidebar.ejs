@@ -1,36 +1,45 @@
 <aside class="sidebar">
   <a href="/dashboard" class="sidebar-brand">
-    <div class="sidebar-brand-icon">🎓</div>
-    <span class="sidebar-brand-name">EduTrack</span>
+    <%- include('logo', { size: 'sm' }) %>
   </a>
 
   <nav class="sidebar-nav">
     <span class="sidebar-label">Main</span>
-    <a href="/dashboard" class="sidebar-link">
+    <a href="/dashboard" class="sidebar-link" data-nav="/dashboard">
       <span class="icon">◈</span> Dashboard
     </a>
-    <a href="/students" class="sidebar-link">
+    <a href="/students" class="sidebar-link" data-nav="/students">
       <span class="icon">◉</span> Students
     </a>
-    <a href="/students/new" class="sidebar-link">
+    <% if (canEdit) { %>
+    <a href="/students/new" class="sidebar-link" data-nav="/students/new">
       <span class="icon">＋</span> Add Student
     </a>
+    <% } %>
 
-    <span class="sidebar-label">System</span>
-    <a href="/api/health" target="_blank" class="sidebar-link">
+    <span class="sidebar-label">Tools</span>
+    <a href="/students/export" class="sidebar-link">
+      <span class="icon">↓</span> Export CSV
+    </a>
+    <a href="/api/health" target="_blank" rel="noopener" class="sidebar-link">
       <span class="icon">◎</span> API Health
     </a>
-    <a href="/api/stats" target="_blank" class="sidebar-link">
-      <span class="icon">≡</span> API Stats
+
+    <% if (isAdmin) { %>
+    <span class="sidebar-label">Administration</span>
+    <a href="/users" class="sidebar-link" data-nav="/users">
+      <span class="icon">⚙</span> Team & Roles
     </a>
+    <% } %>
   </nav>
 
   <div class="sidebar-footer">
+    <div class="sidebar-role-badge badge badge-<%= userRole %>"><%= userRole %></div>
     <a href="/logout" class="sidebar-user" title="Sign out">
       <div class="sidebar-avatar"><%= initials %></div>
       <div class="sidebar-user-info">
         <div class="sidebar-username"><%= currentUser %></div>
-        <div class="sidebar-role"><%= userRole %></div>
+        <div class="sidebar-role">Sign out</div>
       </div>
     </a>
   </div>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><%= title %> — EduTrack</title>
+  <%- include('partials/head-meta') %>
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
@@ -14,7 +15,13 @@
     <div class="topbar">
       <span class="topbar-title">Dashboard</span>
       <div class="topbar-actions">
+        <form class="topbar-search" method="GET" action="/students">
+          <input type="search" name="search" placeholder="Search students…" aria-label="Search students"/>
+          <button type="submit">Search</button>
+        </form>
+        <% if (canEdit) { %>
         <a href="/students/new" class="btn btn-primary btn-sm">＋ Add Student</a>
+        <% } %>
       </div>
     </div>
 
@@ -138,6 +145,31 @@
             <div class="sem-box">
               <div class="sem-num"><%= s.count %></div>
               <div class="sem-label">Sem <%= s._id %></div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (stats.cgpaDistribution.length) { %>
+      <div class="card" style="margin-top:20px">
+        <div class="card-head"><span class="card-title">CGPA Distribution</span></div>
+        <div class="card-body">
+          <div class="cgpa-chart">
+            <% 
+              const cgpaLabels = { '0': '<1.5', '1.5': '1.5–2', '2': '2–2.5', '2.5': '2.5–3', '3': '3–3.5', '3.5': '3.5–4', 'Other': 'Other' };
+              const maxCgpaCount = Math.max(...stats.cgpaDistribution.map(b => b.count), 1);
+              stats.cgpaDistribution.forEach(b => {
+                const label = cgpaLabels[String(b._id)] || b._id;
+                const pct = Math.round(b.count / maxCgpaCount * 100);
+            %>
+            <div class="cgpa-bar-row">
+              <span class="cgpa-bar-label"><%= label %></span>
+              <div class="cgpa-bar-track">
+                <div class="cgpa-bar-fill" data-h="<%= pct %>"></div>
+              </div>
+              <span class="cgpa-bar-count"><%= b.count %></span>
             </div>
             <% }) %>
           </div>

@@ -37,7 +37,22 @@ async function seed() {
     password: 'admin123',
     role:     'admin',
   });
-  console.log('👤  Admin user created  →  admin / admin123');
+  await User.create({
+    username: 'staff1',
+    email:    'staff@edutrack.dev',
+    password: 'staff123',
+    role:     'staff',
+  });
+  await User.create({
+    username: 'viewer1',
+    email:    'viewer@edutrack.dev',
+    password: 'viewer123',
+    role:     'viewer',
+  });
+  console.log('👤  Users created:');
+  console.log('     admin / admin123   (full access)');
+  console.log('     staff1 / staff123  (create & edit)');
+  console.log('     viewer1 / viewer123 (read-only)');
 
   // Generate students
   const students = [];

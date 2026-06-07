@@ -49,11 +49,27 @@ document.querySelectorAll('.cgpa[data-v]').forEach(el => {
 
 /* ─── Active sidebar link ─────────────────────────────────────────────────── */
 const path = window.location.pathname;
-document.querySelectorAll('.sidebar-link').forEach(link => {
-  const href = link.getAttribute('href');
-  if (href !== '/' && path.startsWith(href)) link.classList.add('active');
-  else if (href === '/' && path === '/') link.classList.add('active');
+document.querySelectorAll('.sidebar-link[data-nav]').forEach(link => {
+  const href = link.getAttribute('data-nav');
+  if (href === '/dashboard' && (path === '/dashboard' || path === '/')) {
+    link.classList.add('active');
+  } else if (href !== '/dashboard' && path.startsWith(href)) {
+    link.classList.add('active');
+  }
 });
+
+/* ─── Animate CGPA distribution bars ──────────────────────────────────────── */
+function animateCgpaBars() {
+  document.querySelectorAll('.cgpa-bar-fill[data-h]').forEach(bar => {
+    bar.style.width = '0%';
+    requestAnimationFrame(() =>
+      setTimeout(() => { bar.style.width = bar.dataset.h + '%'; }, 120)
+    );
+  });
+}
+document.readyState === 'loading'
+  ? document.addEventListener('DOMContentLoaded', animateCgpaBars)
+  : animateCgpaBars();
 
 /* ─── Searchable select (semester/dept dropdowns) ─────────────────────────── */
 // Minimal enhancement: auto-submit filter form on select change

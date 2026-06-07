@@ -73,11 +73,15 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ─── Template globals (available in every EJS template) ───────────────────────
 app.use((req, res, next) => {
+  const role = req.session.role || '';
   res.locals.currentUser = req.session.username || null;
-  res.locals.userRole    = req.session.role     || null;
+  res.locals.userRole    = role;
   res.locals.initials    = req.session.initials || '??';
   res.locals.flash       = req.session.flash    || null;
   res.locals.appName     = config.app.name;
+  res.locals.isAdmin     = role === 'admin';
+  res.locals.canEdit     = ['admin', 'staff'].includes(role);
+  res.locals.canDelete   = role === 'admin';
   delete req.session.flash;
   next();
 });
@@ -86,6 +90,7 @@ app.use((req, res, next) => {
 app.use('/',         require('./routes/auth'));
 app.use('/dashboard',require('./routes/dashboard'));
 app.use('/students', require('./routes/students'));
+app.use('/users',    require('./routes/users'));
 app.use('/api',      require('./routes/api'));
 
 // Kubernetes probes (unauthenticated)

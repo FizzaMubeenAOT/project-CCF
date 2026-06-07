@@ -51,6 +51,36 @@ exports.index = async (req, res) => {
   res.render('students/index', { students, pager, DEPARTMENTS, query: req.query, title: 'Students' });
 };
 
+exports.exportCsv = async (req, res) => {
+  const { search, dept, status, semester, minCgpa, maxCgpa } = req.query;
+  const filter = Student.buildFilter({ search, dept, status, semester, minCgpa, maxCgpa });
+  const students = await Student.find(filter).sort('-createdAt').lean();
+
+  const escape = (val) => {
+    const s = val == null ? '' : String(val);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const headers = ['Student ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Department', 'Semester', 'CGPA', 'Status', 'Enrolled'];
+  const rows = students.map((s) => [
+    s.studentId,
+    s.firstName,
+    s.lastName,
+    s.email,
+    s.phone,
+    s.department,
+    s.semester,
+    s.cgpa != null ? s.cgpa.toFixed(2) : '',
+    s.status,
+    new Date(s.enrolledAt || s.createdAt).toISOString().slice(0, 10),
+  ].map(escape).join(','));
+
+  const stamp = new Date().toISOString().slice(0, 10);
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="edutrack-students-${stamp}.csv"`);
+  res.send('\uFEFF' + [headers.join(','), ...rows].join('\n'));
+};
+
 exports.newForm = (_req, res) => {
   res.render('students/form', { student: null, error: null, DEPARTMENTS, title: 'Add Student' });
 };

@@ -40,7 +40,7 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const user = await User.create({ username: username?.trim(), email, password });
+    const user = await User.create({ username: username?.trim(), email, password, role: 'viewer' });
     req.session.userId   = user._id.toString();
     req.session.username = user.username;
     req.session.role     = user.role;

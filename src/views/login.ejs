@@ -4,20 +4,24 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign In — EduTrack</title>
+  <%- include('partials/head-meta') %>
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
 <div class="auth-page">
 
-  <!-- Left panel — branding -->
   <div class="auth-left">
     <div class="auth-left-brand">
-      <div class="auth-left-logo">🎓</div>
-      <span class="auth-left-name">EduTrack</span>
+      <%- include('partials/logo', { size: 'lg' }) %>
     </div>
     <div class="auth-left-quote">
       <blockquote>"Education is not the filling of a pail, but the lighting of a fire."</blockquote>
       <cite>— W.B. Yeats</cite>
+    </div>
+    <div class="auth-features">
+      <div class="auth-feature">◈ Real-time dashboard analytics</div>
+      <div class="auth-feature">◉ 60+ student records with audit trail</div>
+      <div class="auth-feature">↓ CSV export & role-based access</div>
     </div>
   </div>
 
@@ -48,7 +52,9 @@
 
       <p class="auth-footer-link">No account? <a href="/register">Create one</a></p>
       <p class="auth-footer-link" style="margin-top:8px;font-size:12px;color:var(--ink-4)">
-        Demo credentials: <code>admin</code> / <code>admin123</code>
+        Demo: <code>admin</code> / <code>admin123</code> ·
+        <code>staff1</code> / <code>staff123</code> ·
+        <code>viewer1</code> / <code>viewer123</code>
       </p>
     </div>
   </div>

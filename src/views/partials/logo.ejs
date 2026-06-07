@@ -1,0 +1,10 @@
+<% const logoSize = typeof size !== 'undefined' ? size : 'md'; %>
+<div class="brand-logo brand-logo-<%= logoSize %>" aria-hidden="true">
+  <img src="/img/logo.svg" alt="" width="120" height="120"/>
+</div>
+<div class="brand-text">
+  <span class="brand-name">EduTrack</span>
+  <% if (logoSize !== 'sm') { %>
+  <span class="brand-tagline">Student Management</span>
+  <% } %>
+</div>

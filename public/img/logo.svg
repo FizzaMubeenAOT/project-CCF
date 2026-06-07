@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" role="img" aria-label="EduTrack">
+  <rect width="120" height="120" rx="24" fill="#0f0e0c"/>
+  <rect x="8" y="8" width="104" height="104" rx="20" fill="#1a3fcc" opacity="0.12"/>
+  <path d="M60 24L28 40v28c0 18.2 13.6 35.2 32 40 18.4-4.8 32-21.8 32-40V40L60 24z" fill="#ffffff" opacity="0.95"/>
+  <path d="M60 34L38 46v20c0 12.8 9.4 24.8 22 28.2 12.6-3.4 22-15.4 22-28.2V46L60 34z" fill="#1a3fcc"/>
+  <path d="M48 58h24v4H48v-4zm0-8h24v4H48v-4z" fill="#ffffff" opacity="0.92"/>
+  <circle cx="88" cy="32" r="10" fill="#1a6b3c"/>
+  <path d="M84 32l3 3 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
