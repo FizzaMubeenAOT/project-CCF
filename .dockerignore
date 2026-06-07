@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+docker-compose.yml
+k8s/
+*.md
+.DS_Store

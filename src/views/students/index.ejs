@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %> — EduTrack</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <%- include('../partials/sidebar') %>
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title">Students</span>
+      <div class="topbar-actions">
+        <a href="/students/new" class="btn btn-primary btn-sm">＋ Add Student</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <%- include('../partials/flash') %>
+
+      <div class="page-header">
+        <h1>All Students</h1>
+        <p><%= pager.total %> record<%= pager.total !== 1 ? 's' : '' %> · page <%= pager.page %> of <%= pager.totalPages %></p>
+      </div>
+
+      <div class="card">
+        <!-- Filter row -->
+        <form method="GET" action="/students">
+          <div class="filter-row">
+            <input class="form-control filter-search" type="text" name="search"
+                   placeholder="Search name, student ID, or email…"
+                   value="<%= query.search || '' %>"/>
+            <select class="form-control" name="dept">
+              <option value="">All Departments</option>
+              <% DEPARTMENTS.forEach(d => { %>
+                <option value="<%= d %>" <%= query.dept===d?'selected':'' %>><%= d %></option>
+              <% }) %>
+            </select>
+            <select class="form-control" name="status">
+              <option value="">All Status</option>
+              <% ['active','inactive','graduated','suspended'].forEach(s => { %>
+                <option value="<%= s %>" <%= query.status===s?'selected':'' %>><%= s.charAt(0).toUpperCase()+s.slice(1) %></option>
+              <% }) %>
+            </select>
+            <select class="form-control" name="semester">
+              <option value="">All Semesters</option>
+              <% for(let i=1;i<=8;i++) { %>
+                <option value="<%= i %>" <%= query.semester==i?'selected':'' %>>Sem <%= i %></option>
+              <% } %>
+            </select>
+            <select class="form-control" name="sort">
+              <option value="-createdAt" <%=(!query.sort||query.sort==='-createdAt')?'selected':''%>>Newest</option>
+              <option value="createdAt"  <%=query.sort==='createdAt' ?'selected':''%>>Oldest</option>
+              <option value="firstName"  <%=query.sort==='firstName' ?'selected':''%>>Name A–Z</option>
+              <option value="-cgpa"      <%=query.sort==='-cgpa'     ?'selected':''%>>CGPA ↓</option>
+              <option value="cgpa"       <%=query.sort==='cgpa'      ?'selected':''%>>CGPA ↑</option>
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+            <a href="/students" class="btn btn-outline btn-sm">Reset</a>
+          </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Department</th>
+                <th>Sem</th>
+                <th>CGPA</th>
+                <th>Status</th>
+                <th>Enrolled</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% students.forEach(s => { %>
+              <tr data-href="/students/<%= s._id %>">
+                <td>
+                  <div style="font-weight:600"><%= s.firstName %> <%= s.lastName %></div>
+                  <div style="margin-top:2px"><code><%= s.studentId %></code></div>
+                </td>
+                <td class="text-muted" style="font-size:13px"><%= s.department %></td>
+                <td><span style="font-family:var(--font-mono);font-size:12px;color:var(--ink-3)"><%= s.semester %></span></td>
+                <td>
+                  <% if (s.cgpa != null) { %>
+                    <span class="cgpa" data-v="<%= s.cgpa %>"><%= s.cgpa.toFixed(2) %></span>
+                  <% } else { %><span class="text-dim">—</span><% } %>
+                </td>
+                <td><span class="badge badge-<%= s.status %>"><%= s.status %></span></td>
+                <td class="mono text-dim" style="font-size:12px">
+                  <%= new Date(s.enrolledAt||s.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) %>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <a href="/students/<%= s._id %>/edit" class="btn btn-outline btn-xs">Edit</a>
+                    <form method="POST" action="/students/<%= s._id %>?_method=DELETE"
+                          data-confirm="Delete <%= s.firstName %> <%= s.lastName %>? This cannot be undone.">
+                      <button class="btn btn-danger btn-xs">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+              <% if (!students.length) { %>
+              <tr><td colspan="7">
+                <div class="empty"><div class="empty-icon">🔍</div><p>No students match your filters.</p></div>
+              </td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <% if (pager.totalPages > 1) { %>
+        <%
+          function pageUrl(p) {
+            const q = Object.assign({}, query, { page: p });
+            return '/students?' + Object.entries(q).filter(([,v])=>v).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&');
+          }
+        %>
+        <div class="pagination">
+          <span class="pagination-info">
+            Showing <%= pager.skip + 1 %>–<%= Math.min(pager.skip + pager.perPage, pager.total) %> of <%= pager.total %>
+          </span>
+          <div class="pagination-pages">
+            <a href="<%= pageUrl(pager.prevPage) %>" class="<%= !pager.hasPrev ? 'disabled' : '' %>">‹</a>
+            <% for(let p=Math.max(1,pager.page-2); p<=Math.min(pager.totalPages,pager.page+2); p++) { %>
+              <% if (p===pager.page) { %><span class="active"><%= p %></span>
+              <% } else { %><a href="<%= pageUrl(p) %>"><%= p %></a><% } %>
+            <% } %>
+            <a href="<%= pageUrl(pager.nextPage) %>" class="<%= !pager.hasNext ? 'disabled' : '' %>">›</a>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>

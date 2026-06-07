@@ -1,0 +1,6 @@
+<% if (flash) { %>
+<div class="alert alert-<%= flash.type %>" data-dismiss="3500">
+  <span><%= flash.type === 'success' ? '✓' : flash.type === 'info' ? 'ℹ' : '✕' %></span>
+  <%= flash.message %>
+</div>
+<% } %>

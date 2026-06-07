@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= code %> — EduTrack</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <% if (currentUser) { %><%- include('partials/sidebar') %><% } %>
+  <main class="main" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+    <div style="text-align:center;padding:40px">
+      <div style="font-family:var(--font-display);font-size:80px;font-weight:900;color:var(--cream-4);line-height:1"><%= code %></div>
+      <h2 style="font-family:var(--font-display);font-size:22px;margin:12px 0 8px"><%= message %></h2>
+      <a href="/dashboard" class="btn btn-outline btn-sm" style="margin-top:16px">← Go to Dashboard</a>
+      <% if (stack) { %>
+        <pre style="margin-top:24px;text-align:left;background:var(--cream-2);padding:16px;border-radius:8px;font-size:12px;color:var(--ink-3);overflow:auto"><%= stack %></pre>
+      <% } %>
+    </div>
+  </main>
+</div>
+</body>
+</html>

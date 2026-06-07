@@ -1,0 +1,220 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EduTrack — Kubernetes Manifests
+# Apply:  kubectl apply -f k8s/
+# ═══════════════════════════════════════════════════════════════════════════════
+
+---
+# ── Namespace ─────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edutrack
+  labels:
+    app: edutrack
+
+---
+# ── ConfigMap — environment variables ─────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edutrack-config
+  namespace: edutrack
+  labels:
+    app: edutrack
+data:
+  PORT:             "3000"
+  NODE_ENV:         "production"
+  MONGO_URI:        "mongodb://mongo-svc:27017/edutrack"
+  SESSION_SECRET:   "replace-with-a-long-random-string-in-production"
+
+---
+# ── PersistentVolume — MongoDB data ──────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-pv
+  labels:
+    app: edutrack
+    tier: database
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/edutrack-mongo    # Works on Minikube; use cloud PV for production
+
+---
+# ── PersistentVolumeClaim ─────────────────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: edutrack
+  labels:
+    app: edutrack
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# ── MongoDB Deployment ────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: edutrack
+  labels:
+    app: edutrack
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edutrack
+      tier: database
+  template:
+    metadata:
+      labels:
+        app: edutrack
+        tier: database
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:6-jammy
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-storage
+              mountPath: /data/db
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu:    "200m"
+            limits:
+              memory: "512Mi"
+              cpu:    "500m"
+          readinessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+      volumes:
+        - name: mongo-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+
+---
+# ── MongoDB ClusterIP Service ─────────────────────────────────────────────────
+# Internal only — never expose MongoDB externally
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-svc
+  namespace: edutrack
+  labels:
+    app: edutrack
+    tier: database
+spec:
+  selector:
+    app: edutrack
+    tier: database
+  ports:
+    - port: 27017
+      targetPort: 27017
+  type: ClusterIP
+
+---
+# ── App Deployment — 2 replicas, rolling update, health probes ────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edutrack-app
+  namespace: edutrack
+  labels:
+    app: edutrack
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: edutrack
+      tier: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0        # Zero-downtime rolling update
+  template:
+    metadata:
+      labels:
+        app: edutrack
+        tier: frontend
+    spec:
+      # Ensure app pods don't start until MongoDB is ready
+      initContainers:
+        - name: wait-for-mongo
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z mongo-svc 27017; do echo waiting for mongo; sleep 2; done']
+      containers:
+        - name: edutrack
+          image: edutrack:latest
+          imagePullPolicy: IfNotPresent    # Use Never for local Minikube builds
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: edutrack-config
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu:    "100m"
+            limits:
+              memory: "256Mi"
+              cpu:    "300m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+---
+# ── App NodePort Service ──────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: edutrack-svc
+  namespace: edutrack
+  labels:
+    app: edutrack
+    tier: frontend
+spec:
+  selector:
+    app: edutrack
+    tier: frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 30080
+  type: NodePort

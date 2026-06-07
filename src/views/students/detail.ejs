@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %> — EduTrack</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <%- include('../partials/sidebar') %>
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title"><%= student.firstName %> <%= student.lastName %></span>
+      <div class="topbar-actions">
+        <a href="/students/<%= student._id %>/edit" class="btn btn-outline btn-sm">Edit</a>
+        <form method="POST" action="/students/<%= student._id %>?_method=DELETE"
+              data-confirm="Permanently delete this student? This cannot be undone.">
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </form>
+        <a href="/students" class="btn btn-ghost btn-sm">← Back</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <%- include('../partials/flash') %>
+
+      <div class="page-header">
+        <h1><%= student.firstName %> <%= student.lastName %></h1>
+        <p><code><%= student.studentId %></code> · <%= student.department %></p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:20px">
+
+        <!-- Main detail card -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-head">
+              <span class="card-title">Personal Information</span>
+              <span class="badge badge-<%= student.status %>"><%= student.status %></span>
+            </div>
+            <div class="card-body">
+              <dl class="detail-grid">
+                <dt class="detail-key">Full Name</dt>
+                <dd class="detail-val"><%= student.firstName %> <%= student.lastName %></dd>
+
+                <dt class="detail-key">Email</dt>
+                <dd class="detail-val"><%= student.email %></dd>
+
+                <dt class="detail-key">Phone</dt>
+                <dd class="detail-val"><%= student.phone || '—' %></dd>
+
+                <dt class="detail-key">Date of Birth</dt>
+                <dd class="detail-val">
+                  <% if (student.dob) { %>
+                    <%= new Date(student.dob).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) %>
+                    <% if (student.age) { %><span class="text-dim">(age <%= student.age %>)</span><% } %>
+                  <% } else { %>—<% } %>
+                </dd>
+
+                <dt class="detail-key">Gender</dt>
+                <dd class="detail-val"><%= student.gender === 'prefer_not' ? 'Prefer not to say' : student.gender %></dd>
+
+                <dt class="detail-key">Guardian</dt>
+                <dd class="detail-val"><%= student.guardian || '—' %></dd>
+
+                <dt class="detail-key">Address</dt>
+                <dd class="detail-val"><%= student.address || '—' %></dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title">Academic Record</span></div>
+            <div class="card-body">
+              <dl class="detail-grid">
+                <dt class="detail-key">Department</dt>
+                <dd class="detail-val"><%= student.department %></dd>
+
+                <dt class="detail-key">Semester</dt>
+                <dd class="detail-val">Semester <%= student.semester %></dd>
+
+                <dt class="detail-key">CGPA</dt>
+                <dd class="detail-val">
+                  <% if (student.cgpa != null) { %>
+                    <span class="cgpa" data-v="<%= student.cgpa %>">
+                      <%= student.cgpa.toFixed(2) %>
+                    </span>
+                    <span class="text-dim" style="font-size:13px;margin-left:6px">(<%= student.cgpaGrade %>)</span>
+                  <% } else { %>—<% } %>
+                </dd>
+
+                <dt class="detail-key">Enrolled</dt>
+                <dd class="detail-val">
+                  <%= new Date(student.enrolledAt).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) %>
+                </dd>
+
+                <dt class="detail-key">Record Created</dt>
+                <dd class="detail-val mono" style="font-size:12px"><%= new Date(student.createdAt).toISOString().replace('T',' ').split('.')[0] %> UTC</dd>
+
+                <% if (student.createdBy) { %>
+                <dt class="detail-key">Created By</dt>
+                <dd class="detail-val"><code><%= student.createdBy.username %></code></dd>
+                <% } %>
+
+                <% if (student.notes) { %>
+                <dt class="detail-key">Notes</dt>
+                <dd class="detail-val" style="font-size:13px;color:var(--ink-2)"><%= student.notes %></dd>
+                <% } %>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit trail sidebar -->
+        <div class="card" style="align-self:start">
+          <div class="card-head"><span class="card-title">Audit Trail</span></div>
+          <div class="card-body" style="padding:0 16px">
+            <% if (history.length) { %>
+              <% history.forEach(log => { %>
+              <div class="audit-item">
+                <span class="audit-action audit-<%= log.action %>"><%= log.action %></span>
+                <div>
+                  <div style="font-size:13px;font-weight:500"><%= log.username || 'system' %></div>
+                  <div class="audit-meta">
+                    <%= new Date(log.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) %>
+                  </div>
+                </div>
+              </div>
+              <% }) %>
+            <% } else { %>
+              <p class="text-dim" style="padding:20px 0;text-align:center;font-size:13px">No audit history yet</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>

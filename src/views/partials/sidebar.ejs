@@ -1,0 +1,37 @@
+<aside class="sidebar">
+  <a href="/dashboard" class="sidebar-brand">
+    <div class="sidebar-brand-icon">🎓</div>
+    <span class="sidebar-brand-name">EduTrack</span>
+  </a>
+
+  <nav class="sidebar-nav">
+    <span class="sidebar-label">Main</span>
+    <a href="/dashboard" class="sidebar-link">
+      <span class="icon">◈</span> Dashboard
+    </a>
+    <a href="/students" class="sidebar-link">
+      <span class="icon">◉</span> Students
+    </a>
+    <a href="/students/new" class="sidebar-link">
+      <span class="icon">＋</span> Add Student
+    </a>
+
+    <span class="sidebar-label">System</span>
+    <a href="/api/health" target="_blank" class="sidebar-link">
+      <span class="icon">◎</span> API Health
+    </a>
+    <a href="/api/stats" target="_blank" class="sidebar-link">
+      <span class="icon">≡</span> API Stats
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/logout" class="sidebar-user" title="Sign out">
+      <div class="sidebar-avatar"><%= initials %></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-username"><%= currentUser %></div>
+        <div class="sidebar-role"><%= userRole %></div>
+      </div>
+    </a>
+  </div>
+</aside>

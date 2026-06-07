@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %> — EduTrack</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="app-shell">
+  <%- include('partials/sidebar') %>
+
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title">Dashboard</span>
+      <div class="topbar-actions">
+        <a href="/students/new" class="btn btn-primary btn-sm">＋ Add Student</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <%- include('partials/flash') %>
+
+      <div class="page-header">
+        <h1>Overview</h1>
+        <p>All student metrics at a glance</p>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stats-row">
+        <div class="stat-card c-cobalt">
+          <div class="stat-kicker">Total Enrolled</div>
+          <div class="stat-value"><%= stats.total %></div>
+          <div class="stat-label">across all departments</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-kicker">Active</div>
+          <div class="stat-value"><%= stats.active %></div>
+          <div class="stat-label"><%= stats.total ? Math.round(stats.active/stats.total*100) : 0 %>% of total</div>
+        </div>
+        <div class="stat-card c-amber">
+          <div class="stat-kicker">Graduated</div>
+          <div class="stat-value"><%= stats.graduated %></div>
+          <div class="stat-label"><%= stats.inactive %> inactive · <%= stats.suspended %> suspended</div>
+        </div>
+        <div class="stat-card c-slate">
+          <div class="stat-kicker">Avg CGPA</div>
+          <div class="stat-value"><%= stats.cgpaStats.avg ? stats.cgpaStats.avg.toFixed(2) : '—' %></div>
+          <div class="stat-label">
+            <% if (stats.cgpaStats.max) { %>
+              max <%= stats.cgpaStats.max.toFixed(2) %> · min <%= stats.cgpaStats.min.toFixed(2) %>
+            <% } else { %>no data yet<% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main grid -->
+      <div class="dash-grid">
+
+        <!-- Recent students -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Recent Enrollments</span>
+            <a href="/students" class="btn btn-ghost btn-sm">View all →</a>
+          </div>
+          <div class="table-scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Department</th>
+                  <th>CGPA</th>
+                  <th>Status</th>
+                  <th>Enrolled</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% stats.recent.forEach(s => { %>
+                <tr data-href="/students/<%= s._id %>">
+                  <td>
+                    <div style="font-weight:600"><%= s.firstName %> <%= s.lastName %></div>
+                    <code><%= s.studentId %></code>
+                  </td>
+                  <td class="text-muted" style="font-size:13px"><%= s.department %></td>
+                  <td>
+                    <% if (s.cgpa != null) { %>
+                      <span class="cgpa" data-v="<%= s.cgpa %>"><%= s.cgpa.toFixed(2) %></span>
+                    <% } else { %><span class="text-dim">—</span><% } %>
+                  </td>
+                  <td><span class="badge badge-<%= s.status %>"><%= s.status %></span></td>
+                  <td class="text-dim mono" style="font-size:12px">
+                    <%= new Date(s.enrolledAt || s.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}) %>
+                  </td>
+                </tr>
+                <% }) %>
+                <% if (!stats.recent.length) { %>
+                <tr><td colspan="5">
+                  <div class="empty"><div class="empty-icon">📭</div><p>No students yet. <a href="/students/new">Add one</a></p></div>
+                </td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Dept breakdown -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">By Department</span>
+          </div>
+          <div class="card-body" style="padding-top:12px">
+            <% stats.byDept.forEach(d => { %>
+            <% const pct = stats.total ? Math.round(d.count/stats.total*100) : 0; %>
+            <div class="dept-item">
+              <div class="dept-item-top">
+                <span class="dept-name"><%= d._id %></span>
+                <span class="dept-count"><%= d.count %></span>
+              </div>
+              <div class="dept-track">
+                <div class="dept-fill" data-w="<%= pct %>%"></div>
+              </div>
+            </div>
+            <% }) %>
+            <% if (!stats.byDept.length) { %>
+              <p class="text-dim" style="text-align:center;padding:20px 0">No data yet</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semester breakdown -->
+      <% if (stats.bySemester.length) { %>
+      <div class="card" style="margin-top:20px">
+        <div class="card-head"><span class="card-title">Students per Semester</span></div>
+        <div class="card-body">
+          <div class="sem-grid">
+            <% stats.bySemester.forEach(s => { %>
+            <div class="sem-box">
+              <div class="sem-num"><%= s.count %></div>
+              <div class="sem-label">Sem <%= s._id %></div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+    </div><!-- /page-body -->
+  </main>
+</div>
+<script src="/js/app.js"></script>
+</body>
+</html>
